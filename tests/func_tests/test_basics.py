@@ -511,3 +511,20 @@ def test_order_number_setting_4():
     '''
     struct = infer(template, config)
     assert struct['ax'].order_nr != struct['bx'].order_nr != struct['cx'].order_nr
+
+
+def test_sort_filter():
+    template = '''
+    {% for value in values|sort(attribute='order') %}
+        {{ value.field }}
+    {% endfor %}
+    '''
+    struct = infer(template)
+    expected_struct = Dictionary({
+        'values': List(Dictionary({
+                'order': Scalar(label="order", linenos=[2]),
+                'field': Scalar(label="field", linenos=[3])
+            }, label='value', linenos=[3]),
+            label='values', linenos=[2])
+    })
+    assert struct == expected_struct

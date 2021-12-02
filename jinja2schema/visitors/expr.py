@@ -505,10 +505,22 @@ def visit_filter(ast, ctx, macroses=None, config=default_config):
             ctx.meet(Scalar(), ast)
             el_struct = Scalar()
         node_struct = List.from_ast(ast.node, el_struct, order_nr=config.ORDER_OBJECT.get_next())
-    elif ast.name in ('groupby', 'map', 'reject', 'rejectattr', 'select', 'selectattr', 'sort'):
+    elif ast.name in ('groupby', 'map', 'reject', 'rejectattr', 'select', 'selectattr'):
         ctx.meet(List(Unknown()), ast)
         node_struct = merge(
             List(Unknown()),
+            ctx.get_predicted_struct()
+        )
+    elif ast.name == 'sort':
+        predicted_struct = List.from_ast(ast, Unknown(), order_nr=config.ORDER_OBJECT.get_next())
+        for kwarg in ast.kwargs or []:
+            if kwarg.key == 'attribute':
+                attr_struct = Dictionary({
+                    kwarg.value.value: Scalar.from_ast(ast, label=kwarg.value.value)
+                })
+                predicted_struct = merge(predicted_struct, List(attr_struct))
+        node_struct = merge(
+            predicted_struct,
             ctx.get_predicted_struct()
         )
     elif ast.name == 'list':
