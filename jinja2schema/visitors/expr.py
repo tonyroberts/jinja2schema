@@ -510,7 +510,7 @@ def visit_filter(ast, ctx, macroses=None, config=default_config):
             ctx.meet(Scalar(), ast)
             el_struct = Scalar()
         node_struct = List.from_ast(ast.node, el_struct, order_nr=config.ORDER_OBJECT.get_next())
-    elif ast.name in ('groupby', 'map', 'reject', 'rejectattr', 'select', 'selectattr', 'unique'):
+    elif ast.name in ('groupby', 'map', 'reject',  'select', 'unique'):
         ctx.meet(List(Unknown()), ast)
         node_struct = merge(
             List(Unknown()),
@@ -524,10 +524,27 @@ def visit_filter(ast, ctx, macroses=None, config=default_config):
                     kwarg.value.value: Scalar.from_ast(ast, label=kwarg.value.value)
                 })
                 predicted_struct = merge(predicted_struct, List(attr_struct))
-        node_struct = merge(
-            predicted_struct,
-            ctx.get_predicted_struct()
-        )
+        try:
+            node_struct = merge(
+                predicted_struct,
+                ctx.get_predicted_struct()
+            )
+        except MergeException:
+            node_struct = predicted_struct
+    elif ast.name in ('rejectattr', 'selectattr', 'attr'):
+        predicted_struct = List.from_ast(ast, Unknown(), order_nr=config.ORDER_OBJECT.get_next())
+        for arg in ast.args or []:
+            attr_struct = Dictionary({
+                arg.value: Scalar.from_ast(ast, label=arg.value)
+            })
+            predicted_struct = merge(predicted_struct, List(attr_struct))
+        try:
+            node_struct = merge(
+                predicted_struct,
+                ctx.get_predicted_struct()
+            )
+        except MergeException:
+            node_struct = predicted_struct
     elif ast.name == 'list':
         ctx.meet(List(Scalar()), ast)
         node_struct = merge(
@@ -546,10 +563,8 @@ def visit_filter(ast, ctx, macroses=None, config=default_config):
     elif ast.name == 'xmlattr':
         ctx.meet(Scalar(), ast)
         node_struct = Dictionary.from_ast(ast.node, order_nr=config.ORDER_OBJECT.get_next())
-    elif ast.name == 'attr':
-        raise InvalidExpression(ast, 'attr filter is not supported')
     else:
-        raise InvalidExpression(ast, 'unknown filter')
+        raise InvalidExpression(ast, "unknown filter '%s'" % ast.name)
     rv = visit_expr(ast.node, Context(
         ctx=ctx,
         return_struct_cls=return_struct_cls,

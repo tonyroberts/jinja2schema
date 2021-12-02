@@ -225,7 +225,7 @@ def test_basics_11():
     {{ a.attr2|default([])|first }}
     {{ a.attr3|default('gsom') }}
     {% for x in xs|rejectattr('is_active') %}
-        {{ x }}
+        {{ x.field }}
     {% endfor %}
     '''
     struct = infer(template)
@@ -236,7 +236,10 @@ def test_basics_11():
             'attr3': String(label='attr3', linenos=[5], used_with_default=True, value='gsom')
         }, label='a', linenos=[2, 3, 4, 5]),
         'xs': List(
-            Scalar(label='x', linenos=[7]),  # TODO it should be Dictionary({'is_active': Unknown()})
+            Dictionary({
+                'is_active': Scalar(label='is_active', linenos=[6]),
+                'field': Scalar(label='field', linenos=[7])
+            }, label='x', linenos=[7]),
             label='xs',
             linenos=[6]
         ),
