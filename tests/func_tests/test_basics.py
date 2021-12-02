@@ -7,6 +7,7 @@ from jinja2schema.core import infer
 from jinja2schema.exceptions import MergeException, UnexpectedExpression
 from jinja2schema.model import List, Dictionary, Scalar, Unknown, String, Boolean, Tuple, Number
 from jinja2schema.util import debug_repr
+from jinja2schema.visitors.expr import Context
 
 
 def test_basics_1():
@@ -526,5 +527,30 @@ def test_sort_filter():
                 'field': Scalar(label="field", linenos=[3])
             }, label='value', linenos=[3]),
             label='values', linenos=[2])
+    })
+    assert struct == expected_struct
+
+
+def test_custom_filter():
+    template = '''
+    {{ value|to_number }}
+    '''
+
+    def to_number_filter(ast, ctx, config):
+        node_struct = Number.from_ast(ast.node, order_nr=config.ORDER_OBJECT.get_next())
+        return Context(
+            ctx=ctx,
+            return_struct_cls=Number,
+            predicted_struct=node_struct
+        )
+
+    config = Config(CUSTOM_FILTERS={
+        "to_number": to_number_filter
+    })
+
+    struct = infer(template, config)
+
+    expected_struct = Dictionary({
+        "value": Number(label='value', linenos=[2])
     })
     assert struct == expected_struct

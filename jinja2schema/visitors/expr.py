@@ -430,6 +430,11 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
 
 @visits_expr(nodes.Filter)
 def visit_filter(ast, ctx, macroses=None, config=default_config):
+    custom_handler = config.CUSTOM_FILTERS.get(ast.name)
+    if custom_handler is not None:
+        ctx = custom_handler(ast, ctx, config)
+        return visit_expr(ast.node, ctx, macroses, config=config)
+
     return_struct_cls = None
     if ast.name in ('abs', 'striptags', 'capitalize', 'center', 'escape', 'filesizeformat',
                     'float', 'forceescape', 'format', 'indent', 'int', 'replace', 'round',
