@@ -73,6 +73,19 @@ class Config(object):
     is being applied to. 
     """
 
+    CUSTOM_FUNCTIONS = {}
+    """Dictionary of function names to functions for handling Jinja2 extension functions.
+
+    Each functions takes:
+
+        - ast: jinja2.nodes.Call
+        - ctx: jinja2schema.visitors.expr.Context
+        - config: Config
+
+    And returns a tuple of (return struct, args struct). The returned args struct should be a
+    Dictionary of structs describing the required arguments.
+    """
+
     def __init__(self,
                  TYPE_OF_VARIABLE_INDEXED_WITH_VARIABLE_TYPE='dictionary',
                  TYPE_OF_VARIABLE_INDEXED_WITH_INTEGER_TYPE='list',
@@ -81,7 +94,8 @@ class Config(object):
                  TEMPLATE_DIR='templates',
                  ORDER_NUMBER=False,
                  ORDER_NUMBER_SUB_COUNTER=True,
-                 CUSTOM_FILTERS={}):
+                 CUSTOM_FILTERS={},
+                 CUSTOM_FUNCTIONS={}):
         if TYPE_OF_VARIABLE_INDEXED_WITH_VARIABLE_TYPE not in ('dictionary', 'list'):
             raise ValueError('TYPE_OF_VARIABLE_INDEXED_WITH_VARIABLE_TYPE must be'
                              'either "dictionary" or "list"')
@@ -97,6 +111,7 @@ class Config(object):
         self.ORDER_OBJECT = OrderNumber(number=1, enabled=self.ORDER_NUMBER,
                                         sub_counter_enabled=ORDER_NUMBER_SUB_COUNTER)
         self.CUSTOM_FILTERS = CUSTOM_FILTERS
+        self.CUSTOM_FUNCTIONS = CUSTOM_FUNCTIONS
 
 
 default_config = Config()

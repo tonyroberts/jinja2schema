@@ -366,6 +366,10 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
                 raise InvalidExpression(ast, ('incorrect usage of "{0}". unknown keyword argument '
                                               '"{1}" is passed'.format(macro.name, first_unknown_kwarg)))
             return Unknown(), args_struct
+        elif config.CUSTOM_FUNCTIONS and ast.node.name in config.CUSTOM_FUNCTIONS:
+            handler = config.CUSTOM_FUNCTIONS[ast.node.name]
+            ret_struct, args_struct = handler(ast, ctx, config)
+            return ret_struct, args_struct
         elif ast.node.name == 'range':
             ctx.meet(List(Unknown()), ast)
             struct = Dictionary()
