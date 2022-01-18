@@ -436,7 +436,11 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
 def visit_filter(ast, ctx, macroses=None, config=default_config):
     custom_handler = config.CUSTOM_FILTERS.get(ast.name)
     if custom_handler is not None:
-        ctx = custom_handler(ast, ctx, config)
+        result = custom_handler(ast, ctx, config)
+        if isinstance(result, tuple):
+            ret_struct, args_struct = result
+            return ret_struct, args_struct
+        ctx = result
         return visit_expr(ast.node, ctx, macroses, config=config)
 
     return_struct_cls = None
