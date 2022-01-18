@@ -399,6 +399,11 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
             if ast.args:
                 raise InvalidExpression(ast, 'dict accepts only keyword arguments')
             return _visit_dict(ast, ctx, macroses, [(kwarg.key, kwarg.value) for kwarg in ast.kwargs], config=config)
+        elif ast.node.name == 'namespace':
+            ctx.meet(Dictionary(), ast)
+            if ast.args:
+                raise InvalidExpression(ast, 'namespace accepts only keyword arguments')
+            return _visit_dict(ast, ctx, macroses, [(kwarg.key, kwarg.value) for kwarg in ast.kwargs], config=config)
         else:
             raise InvalidExpression(ast, '"{0}" call is not supported'.format(ast.node.name))
     elif isinstance(ast.node, nodes.Getattr):

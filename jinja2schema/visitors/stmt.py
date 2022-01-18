@@ -119,6 +119,7 @@ def visit_if(ast, macroses=None, config=default_config, child_blocks=None):
 def visit_assign(ast, macroses=None, config=default_config, child_blocks=None):
     struct = Dictionary()
     if (isinstance(ast.target, nodes.Name) or
+            (isinstance(ast.target, nodes.NSRef)) or
             (isinstance(ast.target, nodes.Tuple) and isinstance(ast.node, nodes.Tuple))):
         variables = []
         if not (isinstance(ast.target, nodes.Tuple) and isinstance(ast.node, nodes.Tuple)):
