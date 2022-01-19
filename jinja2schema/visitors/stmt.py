@@ -135,9 +135,10 @@ def visit_assign(ast, macroses=None, config=default_config, child_blocks=None):
                 predicted_struct=Unknown.from_ast(var_ast, order_nr=config.ORDER_OBJECT.get_next())), macroses, config)
             var_rtype.constant = True
             var_rtype.label = var_name
-            struct = merge_many(struct, var_struct, Dictionary({
-                var_name: var_rtype,
-            }))
+            ltype = Dictionary({var_name: var_rtype})
+            if isinstance(ast.target, nodes.NSRef):
+                ltype = Dictionary({var_name: Dictionary({ast.target.attr: var_rtype})})
+            struct = merge_many(struct, var_struct, ltype)
         return struct
     elif isinstance(ast.target, nodes.Tuple):
         tuple_items = []
