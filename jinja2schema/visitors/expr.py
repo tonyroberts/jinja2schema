@@ -232,7 +232,8 @@ def visit_getattr(ast, ctx, macroses=None, config=default_config):
         ctx=ctx,
         predicted_struct=Dictionary.from_ast(ast, {
             ast.attr: ctx.get_predicted_struct(label=ast.attr),
-        }, order_nr=config.ORDER_OBJECT.get_next()))
+        }, order_nr=config.ORDER_OBJECT.get_next()),
+        return_struct_cls=Unknown())
     return visit_expr(ast.node, context, macroses, config=config)
 
 
